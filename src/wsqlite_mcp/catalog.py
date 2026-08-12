@@ -1,0 +1,213 @@
+"""Pattern catalog synchronization with local fallbacks for WSQLite."""
+
+import json
+import logging
+from contextlib import suppress
+from urllib import request
+
+logger = logging.getLogger(__name__)
+
+
+class PatternsCatalog:
+    """Manages the synchronization of available SQLite patterns from the wisrovi SUITE.
+
+    Synchronizes from GitHub just like the VS Code extension (with local fallbacks).
+    """
+
+    # URLs synchronized with the wisrovi ecosystem
+    OFFICIAL_URL = "https://raw.githubusercontent.com/wisrovi/wsqlite/main/patterns_catalog.json"
+    COMMUNITY_URL = "https://raw.githubusercontent.com/wisrovi/wsqlite-plugins/main/patterns_catalog.json"
+
+    def __init__(self):
+        """Initialize the catalog with hardcoded offline fallbacks."""
+        self.cached_patterns = []
+        self._load_initial_catalog()
+
+    def _fetch_url(self, url: str) -> list:
+        """Fetch patterns from a URL with timeout and error handling."""
+        try:
+            req = request.Request(url, headers={"User-Agent": "wsqlite-mcp"})
+            with request.urlopen(req, timeout=5) as response:
+                if response.status == 200:
+                    return json.loads(response.read().decode("utf-8"))
+        except Exception as e:  # pylint: disable=broad-exception-caught  # noqa: BLE001
+            logger.warning(f"Failed to fetch catalog from {url}: {e}")
+        return []
+
+    def refresh_catalog(self) -> list:
+        """Fetch latest patterns from both official and community repositories."""
+        official = self._fetch_url(self.OFFICIAL_URL)
+        community = self._fetch_url(self.COMMUNITY_URL)
+
+        # Merge and mark origin
+        all_patterns = []
+        for p in official:
+            p["origin"] = "Official"
+            all_patterns.append(p)
+        for p in community:
+            p["origin"] = "Community"
+            all_patterns.append(p)
+
+        if all_patterns:
+            self.cached_patterns = all_patterns
+            logger.info(f"Catalog refreshed: {len(self.cached_patterns)} patterns found.")
+
+        return self.cached_patterns
+
+    def search(self, query: str) -> list:
+        """Filters cataloged patterns based on a search query keyword."""
+        if not self.cached_patterns:
+            self.refresh_catalog()
+
+        query_lower = query.lower()
+        results = []
+        for pattern in self.cached_patterns:
+            # Match against multiple fields
+            fields = [
+                pattern.get("name", ""),
+                pattern.get("feature", ""),
+                pattern.get("module", ""),
+                pattern.get("description", ""),
+                pattern.get("category", ""),
+            ]
+            if any(query_lower in str(f).lower() for f in fields):
+                results.append(pattern)
+        return results
+
+    def _load_initial_catalog(self):
+        """Initial load with hardcoded fallbacks if offline."""
+        self.cached_patterns = [
+            {
+                "name": "model_crud_basic",
+                "feature": "WSQLite CRUD",
+                "module": "wsqlite",
+                "description": "Pydantic model with automatic table creation, insert, get, update, delete",
+                "category": "Core",
+                "origin": "Official",
+            },
+            {
+                "name": "async_operations",
+                "feature": "Async WSQLite",
+                "module": "wsqlite",
+                "description": (
+                    "Await-based insert_async, get_all_async, get_by_field_async, update_async, delete_async"
+                ),
+                "category": "Core",
+                "origin": "Official",
+            },
+            {
+                "name": "batch_operations",
+                "feature": "Batch Operations",
+                "module": "wsqlite",
+                "description": "insert_many, update_many, delete_many in single transaction",
+                "category": "Performance",
+                "origin": "Official",
+            },
+            {
+                "name": "transactions",
+                "feature": "Transactions",
+                "module": "wsqlite",
+                "description": "execute_transaction and with_transaction for atomic multi-operation",
+                "category": "Advanced",
+                "origin": "Official",
+            },
+            {
+                "name": "relationships_load_related",
+                "feature": "Relationships",
+                "module": "wsqlite",
+                "description": "load_related for foreign key loading (one-to-many, many-to-one)",
+                "category": "Advanced",
+                "origin": "Official",
+            },
+            {
+                "name": "query_builder_basic",
+                "feature": "QueryBuilder",
+                "module": "wsqlite.builders",
+                "description": "Type-safe SQL construction with WHERE, ORDER BY, LIMIT, OFFSET",
+                "category": "Query",
+                "origin": "Official",
+            },
+            {
+                "name": "query_builder_advanced",
+                "feature": "AdvancedQueryBuilder",
+                "module": "wsqlite.builders.advanced_query_builder",
+                "description": "JOINs (INNER, LEFT, RIGHT), GROUP BY, HAVING, aggregates, subqueries, UNION",
+                "category": "Query",
+                "origin": "Official",
+            },
+            {
+                "name": "fts5_search",
+                "feature": "FTS5 Full-Text Search",
+                "module": "wsqlite",
+                "description": "Virtual table with use_fts5 config, search_async with ranking",
+                "category": "Search",
+                "origin": "Official",
+            },
+            {
+                "name": "migrations_versioning",
+                "feature": "Migrations",
+                "module": "wsqlite.migrations",
+                "description": "MigrationManager with @migration decorator, migrate_up/migrate_down, version tracking",
+                "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "connection_pool",
+                "feature": "Connection Pool",
+                "module": "wsqlite.core.pool",
+                "description": "ConnectionPool/AsyncConnectionPool with WAL mode, health checks, stats",
+                "category": "Performance",
+                "origin": "Official",
+            },
+            {
+                "name": "soft_delete",
+                "feature": "Soft Delete",
+                "module": "wsqlite.models",
+                "description": "SoftDeleteMixin + WSQLite(soft_delete=True) for logical deletion with restore",
+                "category": "Data Pattern",
+                "origin": "Official",
+            },
+            {
+                "name": "audit_timestamps",
+                "feature": "Audit & Timestamps",
+                "module": "wsqlite.models",
+                "description": "TimestampMixin (auto created_at/updated_at), AuditMixin (both + soft delete)",
+                "category": "Data Pattern",
+                "origin": "Official",
+            },
+            {
+                "name": "pagination",
+                "feature": "Pagination",
+                "module": "wsqlite",
+                "description": "get_page, get_paginated, async variants for large datasets",
+                "category": "Performance",
+                "origin": "Official",
+            },
+            {
+                "name": "retry_on_lock",
+                "feature": "Retry on Lock",
+                "module": "wsqlite.core.connection",
+                "description": "retry_on_lock decorator and insert_with_retry for contention handling",
+                "category": "Resilience",
+                "origin": "Official",
+            },
+            {
+                "name": "table_sync",
+                "feature": "TableSync",
+                "module": "wsqlite.core.sync",
+                "description": "Explicit schema control: create_if_not_exists, sync_with_model, index management",
+                "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "model_constraints",
+                "feature": "Model Field Constraints",
+                "module": "wsqlite.types.sql_types",
+                "description": "Primary key, unique, index, not null, foreign key via Field description",
+                "category": "Schema",
+                "origin": "Official",
+            },
+        ]
+        # Attempt an immediate refresh
+        with suppress(Exception):
+            self.refresh_catalog()

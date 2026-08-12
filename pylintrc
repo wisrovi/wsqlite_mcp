@@ -1,0 +1,56 @@
+[MAIN]
+fail-under=9.0
+fail-on=
+jobs=4
+persistent=no
+reports=no
+score=yes
+py-version=3.10
+recursive=yes
+
+[MESSAGES CONTROL]
+disable=
+    C0114,   # missing-module-docstring (covered by ruff D100)
+    C0115,   # missing-class-docstring (covered by ruff D101)
+    C0116,   # missing-function-docstring (covered by ruff D102/D103)
+    C0103,   # invalid-name (covered by ruff N rules)
+    C0301,   # line-too-long (covered by ruff E501)
+    C0411,   # wrong-import-order (covered by ruff I001)
+    C0412,   # ungrouped-imports (covered by ruff I)
+    R0801,   # duplicate-code (false positives in generated templates)
+    R0903,   # too-few-public-methods (MCP tools are function-based)
+    R0913,   # too-many-arguments
+    R0914,   # too-many-locals
+    R0915,   # too-many-statements
+    R1702,   # too-many-nested-blocks
+    W0611,   # unused-import (covered by ruff F401)
+    W0612,   # unused-variable (covered by ruff F841)
+    W1203,   # logging-fstring-interpolation
+    E0401,   # import-error (deps resolved at runtime)
+
+[BASIC]
+argument-rgx=[a-z_][a-z0-9_]*$|.*mcp
+attr-rgx=[a-z_][a-z0-9_]*$
+class-rgx=[A-Z_][a-zA-Z0-9_]*$
+function-rgx=[a-z_][a-z0-9_]*$
+method-rgx=[a-z_][a-z0-9_]*$
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9_]+))$
+variable-rgx=[a-z_][a-z0-9_]*$
+
+[REPORTS]
+output-format=text
+
+[tests.test_catalog]
+disable=
+    W0621,   # redefined-outer-name (pytest fixtures named like the SUT)
+    W0212,   # protected-access (tests exercise private helpers directly)
+
+[tests.test_server]
+disable=
+    W0613,   # unused-argument (pytest fixture args)
+    W0212,   # protected-access (tests exercise private helpers directly)
+
+[tests.test_templates]
+disable=
+    W0621,   # redefined-outer-name
+    W0212,   # protected-access
