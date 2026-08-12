@@ -30,7 +30,7 @@ class PatternsCatalog:
             with request.urlopen(req, timeout=5) as response:
                 if response.status == 200:
                     return json.loads(response.read().decode("utf-8"))
-        except Exception as e:  # pylint: disable=broad-exception-caught  # noqa: BLE001
+        except (request.URLError, request.HTTPError, TimeoutError, OSError) as e:
             logger.warning(f"Failed to fetch catalog from {url}: {e}")
         return []
 
@@ -205,6 +205,94 @@ class PatternsCatalog:
                 "module": "wsqlite.types.sql_types",
                 "description": "Primary key, unique, index, not null, foreign key via Field description",
                 "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "model_validation",
+                "feature": "Model Validation",
+                "module": "wsqlite",
+                "description": "Validate Pydantic models for WSQLite compatibility (primary key, FTS5, etc.)",
+                "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "migration_generation",
+                "feature": "Migration Generation",
+                "module": "wsqlite",
+                "description": "Auto-generate migration files from Pydantic model definitions",
+                "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "async_batch_operations",
+                "feature": "Async Batch Operations",
+                "module": "wsqlite",
+                "description": "insert_many_async, update_many_async, delete_many_async for bulk async writes",
+                "category": "Performance",
+                "origin": "Official",
+            },
+            {
+                "name": "async_transactions",
+                "feature": "Async Transactions",
+                "module": "wsqlite",
+                "description": "execute_transaction_async, with_transaction_async for atomic async operations",
+                "category": "Advanced",
+                "origin": "Official",
+            },
+            {
+                "name": "async_relationships",
+                "feature": "Async Relationships",
+                "module": "wsqlite",
+                "description": "load_related_async for async foreign key loading",
+                "category": "Advanced",
+                "origin": "Official",
+            },
+            {
+                "name": "async_fastapi_integration",
+                "feature": "FastAPI Integration",
+                "module": "wsqlite",
+                "description": "Use WSQLite with FastAPI dependency injection and async endpoints",
+                "category": "Integration",
+                "origin": "Official",
+            },
+            {
+                "name": "raw_sql_pool",
+                "feature": "Raw SQL with Pool",
+                "module": "wsqlite.core.pool",
+                "description": "Direct SQL execution via ConnectionPool with execute() and connection()",
+                "category": "Performance",
+                "origin": "Official",
+            },
+            {
+                "name": "index_management",
+                "feature": "Index Management",
+                "module": "wsqlite.core.sync",
+                "description": "TableSync.create_index, drop_index, get_indexes for explicit index control",
+                "category": "Schema",
+                "origin": "Official",
+            },
+            {
+                "name": "serialization_support",
+                "feature": "JSON Serialization",
+                "module": "wsqlite.core.serialization",
+                "description": "serialize_value, deserialize_value for complex types (dict, list, datetime, UUID)",
+                "category": "Core",
+                "origin": "Official",
+            },
+            {
+                "name": "cli_tool",
+                "feature": "CLI Tool",
+                "module": "wsqlite.cli",
+                "description": "wsqlite CLI for init, list, insert, get, delete, count, drop, test_connection",
+                "category": "Integration",
+                "origin": "Official",
+            },
+            {
+                "name": "exception_hierarchy",
+                "feature": "Exception Hierarchy",
+                "module": "wsqlite.exceptions",
+                "description": "Structured exceptions: WSQLiteError, PoolExhaustedError, DatabaseLockedError, etc.",
+                "category": "Core",
                 "origin": "Official",
             },
         ]
