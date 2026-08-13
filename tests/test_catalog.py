@@ -15,7 +15,7 @@ def catalog():
 
 def test_init_loads_initial_catalog():
     c = PatternsCatalog()
-    assert len(c.cached_patterns) == 16
+    assert len(c.cached_patterns) == 27
     assert c.cached_patterns[0]["feature"] == "WSQLite CRUD"
 
 

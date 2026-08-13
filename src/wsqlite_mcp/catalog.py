@@ -32,6 +32,8 @@ class PatternsCatalog:
                     return json.loads(response.read().decode("utf-8"))
         except (request.URLError, request.HTTPError, TimeoutError, OSError) as e:
             logger.warning(f"Failed to fetch catalog from {url}: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.warning(f"Failed to fetch catalog from {url}: {e}")
         return []
 
     def refresh_catalog(self) -> list:
