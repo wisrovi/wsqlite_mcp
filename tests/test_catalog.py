@@ -7,7 +7,7 @@ import pytest
 from wsqlite_mcp.catalog import PatternsCatalog
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog():
     with mock.patch.object(PatternsCatalog, "refresh_catalog", return_value=[]):
         return PatternsCatalog()
@@ -15,7 +15,7 @@ def catalog():
 
 def test_init_loads_initial_catalog():
     c = PatternsCatalog()
-    assert len(c.cached_patterns) == 27
+    assert len(c.cached_patterns) == 28
     assert c.cached_patterns[0]["feature"] == "WSQLite CRUD"
 
 
