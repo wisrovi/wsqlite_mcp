@@ -4,6 +4,7 @@ import json
 import logging
 from contextlib import suppress
 from urllib import request
+from urllib.error import HTTPError, URLError
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class PatternsCatalog:
             with request.urlopen(req, timeout=5) as response:
                 if response.status == 200:
                     return json.loads(response.read().decode("utf-8"))
-        except (request.URLError, request.HTTPError, TimeoutError, OSError) as e:
+        except (URLError, HTTPError, TimeoutError, OSError) as e:
             logger.warning(f"Failed to fetch catalog from {url}: {e}")
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.warning(f"Failed to fetch catalog from {url}: {e}")
@@ -287,6 +288,14 @@ class PatternsCatalog:
                 "module": "wsqlite.cli",
                 "description": "wsqlite CLI for init, list, insert, get, delete, count, drop, test_connection",
                 "category": "Integration",
+                "origin": "Official",
+            },
+            {
+                "name": "ghost_table_audit",
+                "feature": "Enterprise Forensic Audit Log",
+                "module": "wsqlite.models",
+                "description": "ForensicModel and WSQLite(forensic=True) for automatic ghost table audit logging (_forensic_audit_log)",
+                "category": "Audit & Security",
                 "origin": "Official",
             },
             {
