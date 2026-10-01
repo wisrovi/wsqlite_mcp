@@ -107,6 +107,15 @@ class PatternsCatalog:
                 "origin": "Official",
             },
             {
+                "name": "database_views",
+                "feature": "Database Views (@view)",
+                "module": "wsqlite",
+                "description": "Declarative SQLite Views via @view decorator with topological depends_on DDL ordering and read-only protection",
+                "category": "Core",
+                "origin": "Official",
+            },
+
+            {
                 "name": "transactions",
                 "feature": "Transactions",
                 "module": "wsqlite",
